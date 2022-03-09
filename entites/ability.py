@@ -3,6 +3,9 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, overload
 
+from entites.creature import Creature
+from systems.party import Party
+
 
 class Ability(object):
 
@@ -17,6 +20,32 @@ class Ability(object):
     def execute(self, target: Any) -> None:
         pass
 
+    # Targeting logic
+    def isTargetInRange(user: Creature, userParty: Party, target: Creature, targetParty: Party, range: Range) -> bool:
+        if range is Range.SELF and user is target:
+            return True
+        if range is Range.CLOSE and userParty.isMemberInFront(user) and targetParty.isMemberInFront(target):
+            return True
+        if range is Range.VOLLY:
+            if userParty.isMemberInFront(user) and targetParty.isMemberInBack(target):
+                return True
+            if userParty.isMemberInBack(user) and targetParty.isMemberInFront(target):
+                return True
+        if range is Range.REACH:
+            if userParty.isMemberInFront(user):
+                return True
+            if userParty.isMemberInBack(user) and targetParty.isMemberInFront(target):
+                return True
+        if range in [Range.BACK, Range.BACKROW] and targetParty.isMemberInBack(target):
+            return True
+        if range in [Range.FRONT, Range.FRONTROW] and targetParty.isMemberInFront(target):
+            return True
+        if range is Range.SAMEROW and userParty.getMembersRow(user) is targetParty.getMembersRow(target):
+            return True
+        if range is Range.ALL:
+            return True
+        return False
+
 
 class TargetType(Enum):
     SELF = 0
@@ -25,11 +54,14 @@ class TargetType(Enum):
     ENEMIES = 3
     ALLIES = 4
 
+
 class Range(Enum):
     SELF = 0
     CLOSE = 1
     VOLLY = 2
     REACH = 3
+    SAMEROW = 10
+    ANYROW = 9
     FRONT = 4
     FRONTROW = 7
     BACK = 5
@@ -69,6 +101,7 @@ class AbilitySet(object):
     def addDefensiveSkill(self, ability: Ability) -> AbilitySet:
         self.defense.add(ability)
         return self
+
 
 class CombatAbility(Ability):
 

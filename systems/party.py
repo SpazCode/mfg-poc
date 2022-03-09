@@ -42,6 +42,25 @@ class Party(object):
             raise PartyAdditionError('This party is already full.')
         return self
 
+    def getMembersRow(self, creature: Creature) -> PartyRow:
+        if creature not in self.members:
+            raise Exception('This creature is not in this party')
+        if self.members.index(creature) in self.rows[PartyRow.BACK]:
+            return PartyRow.BACK
+        else:
+            return PartyRow.FRONT
+
+    def isMemberInBack(self, creature: Creature) -> bool:
+        if creature not in self.members:
+            raise Exception('This creature is not in this party')
+        return self.members.index(creature) in self.rows[PartyRow.BACK]
+
+    def isMemberInFront(self, creature: Creature) -> bool:
+        if creature not in self.members:
+            raise Exception('This creature is not in this party')
+        return self.members.index(creature) in self.rows[PartyRow.FRONT]
+
+
     def __str__(self) -> str:
         output = 'Front: '
         for member in self.rows[PartyRow.FRONT]:

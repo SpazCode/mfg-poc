@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import deque
 from random import randint
 from typing import Any
-from entites.ability import Range, TargetType
+from entites.ability import Ability, Range, TargetType
 from entites.characters.character import AbilitySet, Character
 from entites.creature import Creature
 from entites.monsters.monster import Monster
@@ -44,7 +44,7 @@ class Combat(Scene):
         if current in self.playerParty.members:
             self.playerCommand(current)
         else:
-            self.enemyCommand(current)
+           current.combatTurn(self.playerParty,  self.enemyParty)
         self.turnOrder.append(current)
         print('===============================')
 
@@ -56,10 +56,12 @@ class Combat(Scene):
         ability = curr.abilities
         while inMenu:
             print('|-----------------------------|')
-            chooser = self.buildPlayerMenu(ability)
+            abilityChooser = self.buildPlayerMenu(ability)
             print('-------------------------------')
-            command = input("Enter Command: ")
-            choice = chooser[command]
+            command = None
+            while command not in abilityChooser.keys():
+                command = input("Enter Command: ")
+            choice = abilityChooser[command]
             ability = choice[0]
             inMenu = choice[1]
 
@@ -72,22 +74,49 @@ class Combat(Scene):
             target = None
             if not inMenu and ability is not None:
                 print('<----------------------------->')
-                if ability.targetType == TargetType.SELF:
+                if ability.targetType is TargetType.SELF:
                     target = curr
+                elif ability.targetType is TargetType.ALLIES and ability.range is not Range.ANYROW:
+                    # Get all allies in Range
+                    target = list(filter(lambda m: Ability.isTargetInRange(
+                        curr, self.playerParty, m, self.playerParty, ability.range), self.playerParty.members))
+                elif ability.targetType is TargetType.ENEMIES and ability.range is not Range.ANYROW:
+                    target = list(filter(lambda m: Ability.isTargetInRange(
+                        curr, self.playerParty, m, self.enemyParty, ability.range), self.enemyParty.members))
                 else:
                     targetChooser = {}
                     # If we need to traget a Character then we target Each Memeber
                     if ability.targetType == TargetType.ALLY:
-                        for i, m in enumerate(self.playerParty.members):
+                        targetsInRange = list(filter(lambda m: Ability.isTargetInRange(
+                            curr, self.playerParty, m, self.playerParty, ability.range), self.playerParty.members))
+                        for i, m in enumerate(targetsInRange):
                             print('({0}) - {1}'.format(i, m.name))
                             targetChooser[str(i)] = m
                     elif ability.targetType == TargetType.ENEMY:
-                        for i, m in enumerate(self.enemyParty.members):
+                        targetsInRange = list(filter(lambda m: Ability.isTargetInRange(
+                            curr, self.playerParty, m, self.enemyParty, ability.range), self.enemyParty.members))
+                        for i, m in enumerate(targetsInRange):
                             print('({0}) - {1}'.format(i, m.name))
                             targetChooser[str(i)] = m
+                    elif ability.targetType is TargetType.ALLIES and ability.range is Range.ANYROW:
+                        print('(F)ront Row')
+                        targetChooser['f'] = targetChooser['F'] = self.playerParty.rows[PartyRow.FRONT]
+                        print('(B)ack Row')
+                        targetChooser['b'] = targetChooser['B'] = self.playerParty.rows[PartyRow.BACK]
+                    elif ability.targetType is TargetType.ENEMIES and ability.range is Range.ANYROW:
+                        print('(F)ront Row')
+                        targetChooser['f'] = targetChooser['F'] = self.enemyParty.rows[PartyRow.FRONT]
+                        print('(B)ack Row')
+                        targetChooser['b'] = targetChooser['B'] = self.enemyParty.rows[PartyRow.BACK]
                     print('(R)estart')
-                    command = input("Choose a Target: ")
-                    target = targetChooser[command]
+                    command = None
+                    if len(targetChooser.keys()) < 1:
+                        print("No targets in range")
+                        command = 'r'
+                    else:
+                        while command not in targetChooser.keys():
+                            command = input("Choose a Target: ")
+                        target = targetChooser[command]
 
             # Restart the Menus
             if command in ['r', 'R']:
@@ -135,52 +164,6 @@ class Combat(Scene):
             print('(R)estart')
             abilityChooser['r'] = abilityChooser['R'] = (None, True)
             return abilityChooser
-
-    def enemyCommand(self, curr: Monster) -> None:
-        ability = None
-        if len(curr.abilities.unique) > 1:
-            choice = randint(-1, len(curr.abilities.unique) -1)
-            if choice == -1:
-                ability = curr.abilities.attack
-            else:
-                ability = curr.abilities.unique[choice]
-        else:
-            ability = curr.abilities.attack
-
-        if ability == None:
-            return
-
-        target = None
-        if ability.targetType == TargetType.ENEMY:
-            targetIndex = randint(0, len(self.playerParty.members) - 1)
-            target = self.playerParty.members[targetIndex]
-
-        ability.execute(target)
-
-    # Targeting System
-    def isTargetInRange(self, user: Creature, userParty:Party, target: Creature, targetParty: Party, range: Range) -> bool:
-        if range is Range.SELF and user is target:
-            return True
-        if range is Range.CLOSE and user in userParty.rows[PartyRow.FRONT] and target in targetParty.rows[PartyRow.FRONT]:
-            return True
-        if range is Range.VOLLY:
-            if user in userParty.rows[PartyRow.FRONT] and target in targetParty.rows[PartyRow.BACK]:
-                return True
-            if user in userParty.rows[PartyRow.BACK] and target in targetParty.rows[PartyRow.FRONT]:
-                return True
-        if range is Range.REACH:
-            if user in userParty.rows[PartyRow.FRONT]:
-                return True
-            if user in userParty.rows[PartyRow.BACK] and target in targetParty.rows[PartyRow.FRONT]:
-                return True
-        if range in [Range.BACK, Range.BACKROW] and target in targetParty.rows[PartyRow.BACK]:
-            return True
-        if range in [Range.FRONT, Range.FRONTROW] and target in targetParty.rows[PartyRow.FRONT]:
-            return True
-        if range is Range.ALL:
-            return True            
-        return False
-
 
     def end(self) -> None:
         print('Ending Combat')
