@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import deque
 from random import randint
 from typing import Any
-from entites.ability import Ability, Range, TargetType
+from entites.ability import Ability, CombatAbility, Range, TargetType
 from entites.characters.character import AbilitySet, Character
 from entites.creature import Creature
 from entites.monsters.monster import Monster
@@ -44,7 +44,7 @@ class Combat(Scene):
         if current in self.playerParty.members:
             self.playerCommand(current)
         else:
-           current.combatTurn(self.playerParty,  self.enemyParty)
+            current.combatTurn(self.playerParty,  self.enemyParty)
         self.turnOrder.append(current)
         print('===============================')
 
@@ -67,8 +67,13 @@ class Combat(Scene):
 
             # We end the combat if there is no abilty chosen and we want to leave the menu
             # This is most likely an escape attempt
-            if not inMenu and ability is None:
+            # TODO(Stuart): Implement the Escape system
+            if not inMenu and ability is None and command in ['e', 'E']:
                 self.end()
+            # Not selecting an ability but Passing the turn.
+            # TODO(Stuart): Implement the Pass system
+            if not inMenu and ability is None and command in ['p', 'P']:
+                return
 
             # We move on to the trageting if we can.
             target = None
@@ -131,22 +136,25 @@ class Combat(Scene):
         # Top level menu for the player
         abilityChooser = {}
         if type(abilities) is AbilitySet:
+            # Build the initial menu and chooser
             print('(A)ttack')
-            print('(D)efense')
-            print('(S)kills')
-            if len(abilities.unique) > 1:
-                print('(U):{0}'.format(abilities.uniqueLabel))
-            print('(E)scape')
-            # Build the ability chooser
             abilityChooser['a'] = abilityChooser['A'] = (
                 abilities.attack, False)
+            print('(D)efense')
             abilityChooser['d'] = abilityChooser['D'] = (
                 abilities.defense, True)
-            abilityChooser['s'] = abilityChooser['S'] = (
-                abilities.skills, True)
-            abilityChooser['u'] = abilityChooser['U'] = (
-                abilities.unique, True)
+            if len(abilities.skills.keys()) > 1:
+                print('(S)kills')
+                abilityChooser['s'] = abilityChooser['S'] = (
+                    abilities.skills, True)
+            if len(abilities.unique) > 1:
+                print('(U):{0}'.format(abilities.uniqueLabel))
+                abilityChooser['u'] = abilityChooser['U'] = (
+                    abilities.unique, True)
+            print('(E)scape')
             abilityChooser['e'] = abilityChooser['E'] = (None, False)
+            print('(P)ass')
+            abilityChooser['p'] = abilityChooser['P'] = (None, False)
             return abilityChooser
         # if we are passed the set of abilities then we itterate through them and build a chooser for them.
         if type(abilities) is set:

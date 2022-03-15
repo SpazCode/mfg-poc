@@ -3,18 +3,15 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import Any, overload
 
+from systems.attributes import Attribute, Attributes
+
 
 class Creature(object):
 
     def __init__(self) -> None:
         self.currentHP = 0
         self.HP = 5
-        self.STR = 1
-        self.DEX = 1
-        self.CON = 1
-        self.INT = 1
-        self.WIS = 1
-        self.CHA = 1
+        self._attributes = Attributes()
 
     def resetHP(self) -> Creature:
         self.currentHP = self.HP
@@ -35,46 +32,49 @@ class Creature(object):
         return self
 
     def getSTR(self) -> int:
-        return self.STR
+        return self._attributes[Attribute.STR]
 
     def setSTR(self,  value: int) -> Creature:
-        self.STR = value
+        self._attributes[Attribute.STR] = value
         return self
 
     def getDEX(self) -> int:
-        return self.DEX
+        return self._attributes[Attribute.DEX]
 
     def setDEX(self, value: int) -> Creature:
-        self.DEX = value
+        self._attributes[Attribute.DEX] = value
         return self
 
     def getCON(self) -> int:
-        return self.CON
+        return self._attributes[Attribute.CON]
 
     def setCON(self,  value: int) -> Creature:
-        self.CON = value
+        self._attributes[Attribute.CON] = value
         return self
 
     def getINT(self) -> int:
-        return self.INT
+        return self._attributes[Attribute.INT]
 
     def setINT(self, value: int) -> Creature:
-        self.INT = value
+        self._attributes[Attribute.INT] = value
         return self
 
     def getWIS(self) -> int:
-        return self.WIS
+        return self._attributes[Attribute.WIS]
 
     def setWIS(self, value: int) -> Creature:
-        self.WIS = value
+        self._attributes[Attribute.WIS] = value
         return self
 
     def getCHA(self) -> int:
-        return self.CHA
+        return self._attributes[Attribute.CHA]
 
     def setCHA(self, value: int) -> Creature:
-        self.CHA = value
+        self._attributes[Attribute.CHA] = value
         return self
+
+    def getAttributes(self) -> Attributes:
+        return self._attributes
 
     @overload
     def updateStats(self) -> Creature:

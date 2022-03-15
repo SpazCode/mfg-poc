@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from random import randint
-from entites.ability import AbilitySet, CombatAbility
+from entites.ability import AbilitySet, CombatAbility, Range
 from entites.creature import Creature, CreatureSize
+from entites.items.equipment import EquipentSlots, EquipmentSet
+from entites.items.weapon import BareHanded
+from systems.stats import Stats
 
 
 class Character(Creature):
@@ -10,13 +13,10 @@ class Character(Creature):
     def __init__(self) -> None:
         super().__init__()
         self.name = ""
-        self.ATK = 1
-        self.DEF = 1
-        self.MAG = 1
-        self.RES = 1
-        self.SPD = 1
+        self.stats = Stats()
         self.size = CreatureSize.MEDIUM
         self.abilities = AbilitySet().setAttack(Character.BasicAttack(self))
+        self.equipment = EquipmentSet().equip(EquipentSlots.LEFT_HAND, BareHanded)
 
     def getName(self) -> str:
         return self.name
@@ -29,16 +29,16 @@ class Character(Creature):
         return self.abilities
 
     def updateStats(self) -> Character:
-        self.ATK = max(1,  6 + (int(self.STR / 2) - 5) +
-                       (int(self.DEX / 4) - 3))
-        self.DEF = max(1,  6 + (int(self.CON / 2) - 5) +
-                       (int(self.DEX / 4) - 3))
-        self.MAG = max(1,  6 + (int(self.INT / 2) - 5) +
-                       (int(self.WIS / 4) - 3))
-        self.RES = max(1,  6 + (int(self.WIS / 2) - 5) +
-                       (int(self.CHA / 4) - 3))
-        self.SPD = max(1, 8 + (int(self.DEX / 2) - 3)
-                       + (int(self.CHA / 4) - 3))
+        self.ATK = max(1,  6 + (int(self.getSTR() / 2) - 5) +
+                       (int(self.getDEX() / 4) - 3))
+        self.DEF = max(1,  6 + (int(self.getCON() / 2) - 5) +
+                       (int(self.getDEX() / 4) - 3))
+        self.MAG = max(1,  6 + (int(self.getINT() / 2) - 5) +
+                       (int(self.getWIS() / 4) - 3))
+        self.RES = max(1,  6 + (int(self.getWIS() / 2) - 5) +
+                       (int(self.getCHA() / 4) - 3))
+        self.SPD = max(1, 8 + (int(self.getDEX() / 2) - 3)
+                       + (int(self.getCHA() / 4) - 3))
         return self
 
     def getStatBlock(self) -> str:
@@ -53,6 +53,7 @@ class Character(Creature):
             super().__init__(user)
             self.name = 'Attack'
             self.description = 'Basic attack with your main weapon'
+            self.range = Range.CLOSE
 
         def execute(self, target: Creature) -> None:
             if target is not None:

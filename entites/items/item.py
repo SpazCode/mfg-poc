@@ -8,30 +8,14 @@ class Item(object):
         self.weight = 0.0
         self.description = ""
 
-    def getName(self) -> str:
+    def getDisplayName(self) -> str:
         return self.name
 
-    def setName(self, value: str) -> Item:
-        self.name = value
-        return self
-
-    def getCost(self) -> float:
+    def getDisplayCost(self) -> float:
         return self.cost
 
-    def setCost(self, value: float) -> Item:
-        self.cost = value
-        return self
-
-    def getWeight(self) -> float:
+    def getDisplayWeight(self) -> float:
         return self.weight
 
-    def setWeight(self, value: float) -> Item:
-        self.weight = value
-        return self
-
-    def getDescription(self) -> str:
+    def getFormatedDescription(self) -> str:
         return self.description
-
-    def setDescription(self, value: str) -> Item:
-        self.description = value
-        return self

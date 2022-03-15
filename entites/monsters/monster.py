@@ -1,9 +1,9 @@
 from __future__ import annotations
-from random import randint
-from typing import overload
 
+from random import randint
 from entites.ability import Ability, AbilitySet, TargetType
 from entites.creature import Creature, CreatureSize
+from systems import stats
 from systems.party import Party
 
 
@@ -12,11 +12,7 @@ class Monster(Creature):
     def __init__(self) -> None:
         super().__init__()
         self.name = ''
-        self.ATK = 0
-        self.DEF = 0
-        self.MAG = 0
-        self.RES = 0
-        self.SPD = 0
+        self.stats = stats()
         self.size = CreatureSize.MEDIUM
         self.abilities = AbilitySet()
 
@@ -28,16 +24,16 @@ class Monster(Creature):
         return self
 
     def updateStats(self) -> Creature:
-        self.ATK = max(1,  6 + (int(self.STR / 2) - 5) +
-                       (int(self.DEX / 4) - 3))
-        self.DEF = max(1,  6 + (int(self.CON / 2) - 5) +
-                       (int(self.DEX / 4) - 3))
-        self.MAG = max(1,  6 + (int(self.INT / 2) - 5) +
-                       (int(self.WIS / 4) - 3))
-        self.RES = max(1,  6 + (int(self.WIS / 2) - 5) +
-                       (int(self.CHA / 4) - 3))
-        self.SPD = max(1, 8 + (int(self.DEX / 2) - 3)
-                       + (int(self.CHA / 4) - 3))
+        self.ATK = max(1,  6 + (int(self.getSTR() / 2) - 5) +
+                       (int(self.getDEX() / 4) - 3))
+        self.DEF = max(1,  6 + (int(self.getCON() / 2) - 5) +
+                       (int(self.getDEX() / 4) - 3))
+        self.MAG = max(1,  6 + (int(self.getINT() / 2) - 5) +
+                       (int(self.getWIS() / 4) - 3))
+        self.RES = max(1,  6 + (int(self.getWIS() / 2) - 5) +
+                       (int(self.getCHA() / 4) - 3))
+        self.SPD = max(1, 8 + (int(self.getDEX() / 2) - 3)
+                       + (int(self.getCHA() / 4) - 3))
         return self
 
     def getStatBlock(self) -> str:
@@ -46,18 +42,18 @@ class Monster(Creature):
     def __str__(self) -> str:
         return self.name
 
-    @overload
     def combatTurn(self, playerParty: Party, yourParty: Party):
         ability = None
         target = None
         tried = []
-        while target is None:        
+        while target is None:
             # Pick a move at random
-            abilityChoices = list(filter(lambda a: a not in tried, self.abilities.unique)) + [self.abilities.attack]
+            abilityChoices = list(filter(
+                lambda a: a not in tried, self.abilities.unique)) + [self.abilities.attack]
             choice = randint(0, len(abilityChoices) - 1)
             ability = abilityChoices[choice]
-            
-            # 
+
+            #
             if ability is None or ability in tried:
                 return
 
