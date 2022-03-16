@@ -27,7 +27,7 @@ class Attributes(dict):
         return '%s(%s)' % (type(self).__name__, dictrepr)
         
     def update(self, *args, **kwargs):
-        for k, v in dict(*args, **kwargs).iteritems():
+        for k, v in dict(*args, **kwargs).items():
             self[k] = v
 
     def getModifier(self, key: Attribute):

@@ -6,6 +6,7 @@ from entites.characters.character import Character
 from entites.creature import Creature
 from entites.monsters.monster import Monster
 from systems.party import Party
+from systems.stats import Stat
 
 
 class Goblin(Monster):
@@ -33,8 +34,8 @@ class ClawAttack(CombatAbility):
 
     def execute(self, target: Creature) -> None:
         if target is not None and type(target) is Character:
-            dmg = max(randint(1, 4), target.DEF - self.user.ATK)
-            hit = int(randint(0, 10)) + (int(self.user.DEX / 2) - 5)
+            dmg = max(randint(1, 4), target.stats[Stat.DEF] - self.user.stats[Stat.ATK])
+            hit = int(randint(0, 10)) + (int(self.user.getDEX() / 2) - 5)
             if hit > 5:
                 print('{0} hit {1} dealing {2} Damage'.format(
                     self.user.getName(), target.getName(), dmg))
@@ -55,8 +56,8 @@ class RockThrow(CombatAbility):
 
     def execute(self, target: Creature) -> None:
         if target is not None and type(target) is Character:
-            dmg = max(1, target.DEF - self.user.ATK)
-            hit = int(randint(0, 10)) + (int(self.user.DEX / 2) - 5)
+            dmg = max(1, target.stats[Stat.DEF] - self.user.stats[Stat.ATK])
+            hit = int(randint(0, 10)) + (int(self.user.getDEX() / 2) - 5)
             if hit > 5:
                 print('{0} hit {1} dealing {2} Damage'.format(
                     self.user.getName(), target.getName(), dmg))

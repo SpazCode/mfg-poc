@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from typing import overload
+from entites.ability import Ability
 from entites.creature import Creature
 from entites.items.item import Item
 from systems.attributes import Attribute, Attributes
@@ -11,12 +12,13 @@ from systems.attributes import Attribute, Attributes
 class Equipment(Item):
 
     def __init__(self) -> None:
-        super().__init__(self)
+        super().__init__()
         self.equipedUser = None
         self.stats = dict()
         self.modifiers = dict()
         self.requirements = dict()
-    
+        self.skills = list()
+
     def canEquip(self, attributes: Attribute) -> bool:
         for req in self.requirements:
             if attributes[req] < self.requirements[req]:
@@ -33,10 +35,13 @@ class Equipment(Item):
         mod = {}
         for stat in self.stats.keys():
             mod[stat] = self.stats[stat]
-            for modifier in self.modifiers[stat]:
-                mod[stat] += modifier.multiplyer * attributes.getModifier(
-                    modifier.attribute) if modifier.useMod else attributes[modifier.attribute]
+            if stat in self.modifiers.keys():
+                mod[stat] += self.modifiers[stat].multiplyer * attributes.getModifier(
+                    self.modifiers[stat].attribute) if self.modifiers[stat].useMod else attributes[self.modifiers[stat].attribute]
         return mod
+
+    def addEquipmentSkill(self, type: str, reqs: list, ability: Ability) -> Equipment:
+        self.skills.append(EquipmentSkill(type, reqs, ability))
 
 
 @dataclass
@@ -46,9 +51,22 @@ class Modifier(object):
     useMod: bool
 
 
+@dataclass
+class EquipmentSkill(object):
+    skillType: str
+    requirements: list
+    skill: Ability
+
+    def canUse(self, attributes: Attribute) -> bool:
+        for req in self.requirements:
+            if attributes[req] < self.requirements[req]:
+                return False
+        return True
+
+
 class EquipentSlots(Enum):
-    LEFT_HAND = 1
-    RIGHT_HAND = 2
+    MAIN_HAND = 1
+    OFF_HAND = 2
     HEAD = 3
     BODY = 4
     ARMS = 5
@@ -59,8 +77,8 @@ class EquipentSlots(Enum):
 
 class EquipmentSet(dict):
     def __init__(self, *args, **kwargs):
-        self.__setitem__(EquipentSlots.LEFT_HAND, None)
-        self.__setitem__(EquipentSlots.RIGHT_HAND, None)
+        self.__setitem__(EquipentSlots.MAIN_HAND, None)
+        self.__setitem__(EquipentSlots.OFF_HAND, None)
         self.__setitem__(EquipentSlots.HEAD, None)
         self.__setitem__(EquipentSlots.BODY, None)
         self.__setitem__(EquipentSlots.ARMS, None)
@@ -77,15 +95,15 @@ class EquipmentSet(dict):
         val = dict.__getitem__(self, key)
         return val
 
-    def __setitem__(self, key: Attribute, val: int):
-        if type(key) is not Attribute:
-            raise Exception('Only an Atrribute can be included')
+    def __setitem__(self, key: EquipentSlots, val: Equipment):
+        if type(key) is not EquipentSlots:
+            raise Exception('Only an EquipmentSlot can be included as the key')
         dict.__setitem__(self, key, val)
 
     def __repr__(self):
         dictrepr = dict.__repr__(self)
         return '%s(%s)' % (type(self).__name__, dictrepr)
-        
+
     def update(self, *args, **kwargs):
-        for k, v in dict(*args, **kwargs).iteritems():
+        for k, v in dict(*args, **kwargs).items():
             self[k] = v

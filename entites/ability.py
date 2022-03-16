@@ -16,6 +16,9 @@ class Ability(object):
         self.targetType = TargetType.SELF
         self.range = Range.SELF
 
+    def setUser(self, user: Creature):
+        self.user = user
+
     @overload
     def execute(self, target: Any) -> None:
         pass
@@ -108,7 +111,6 @@ class CombatAbility(Ability):
     def __init__(self, user: Any) -> None:
         super().__init__(user)
         self.targetType = TargetType.ENEMY
-
 
 class FeildAbility(Ability):
 

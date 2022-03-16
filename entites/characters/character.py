@@ -4,8 +4,8 @@ from random import randint
 from entites.ability import AbilitySet, CombatAbility, Range
 from entites.creature import Creature, CreatureSize
 from entites.items.equipment import EquipentSlots, EquipmentSet
-from entites.items.weapon import BareHanded
-from systems.stats import Stats
+from entites.items.weapon import BareHanded, Weapon
+from systems.stats import Stat, Stats
 
 
 class Character(Creature):
@@ -16,7 +16,9 @@ class Character(Creature):
         self.stats = Stats()
         self.size = CreatureSize.MEDIUM
         self.abilities = AbilitySet().setAttack(Character.BasicAttack(self))
-        self.equipment = EquipmentSet().equip(EquipentSlots.LEFT_HAND, BareHanded)
+        barehands = BareHanded()
+        barehands.equip(self)
+        self.equipment = EquipmentSet().equip(EquipentSlots.MAIN_HAND, barehands)
 
     def getName(self) -> str:
         return self.name
@@ -29,20 +31,33 @@ class Character(Creature):
         return self.abilities
 
     def updateStats(self) -> Character:
-        self.ATK = max(1,  6 + (int(self.getSTR() / 2) - 5) +
-                       (int(self.getDEX() / 4) - 3))
-        self.DEF = max(1,  6 + (int(self.getCON() / 2) - 5) +
-                       (int(self.getDEX() / 4) - 3))
-        self.MAG = max(1,  6 + (int(self.getINT() / 2) - 5) +
-                       (int(self.getWIS() / 4) - 3))
-        self.RES = max(1,  6 + (int(self.getWIS() / 2) - 5) +
-                       (int(self.getCHA() / 4) - 3))
-        self.SPD = max(1, 8 + (int(self.getDEX() / 2) - 3)
-                       + (int(self.getCHA() / 4) - 3))
+        # Set Base stats for a character.
+        self.stats.setDefaults()
+        # Update stats based on equipment
+        for key in self.equipment.keys():
+            equipped = self.equipment[key]
+            if equipped is not None:
+                mods = equipped.modifyStats(self.getAttributes())
+                for stat in mods.keys():
+                    self.stats[stat] += mods[stat]
+        # Set attacks based on weapon(s)
+        if type(self.equipment[EquipentSlots.MAIN_HAND]) is Weapon and type(self.equipment[EquipentSlots.RIGHT_HAND]) is Weapon:
+            # TODO(Stuart): Make the double attack ability to replace this.
+            self.abilities.setAttack(
+                self.equipment[EquipentSlots.MAIN_HAND].getAttack())
+        else:
+            self.abilities.setAttack(
+                self.equipment[EquipentSlots.MAIN_HAND].getAttack())
+        # Get the skills from the equiment
+        for slot in self.equipment.keys():
+            if self.equipment[slot] is not None:
+                for skill in self.equipment[slot].skills:
+                    if skill.canUse(self.getAttributes()):
+                        self.abilities.addSkill(skill.skillType, skill.skill)
         return self
 
     def getStatBlock(self) -> str:
-        return 'Name: {0} - HP: {6}, ATK: {1}, DEF: {2}, MAG: {3}, RES: {4}, SPD: {5}'.format(self.name, self.ATK, self.DEF, self.MAG, self.RES, self.SPD, self.HP)
+        return 'Name: {0} - HP: {6}, ATK: {1}, DEF: {2}, MAG: {3}, RES: {4}, SPD: {5}'.format(self.name, self.stats[Stat.ATK], self.stats[Stat.DEF], self.stats[Stat.MAG], self.stats[Stat.RES], self.stats[Stat.SPD], self.HP)
 
     def __str__(self) -> str:
         return self.name

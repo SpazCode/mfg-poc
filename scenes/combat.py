@@ -7,6 +7,7 @@ from entites.ability import Ability, CombatAbility, Range, TargetType
 from entites.characters.character import AbilitySet, Character
 from entites.creature import Creature
 from entites.monsters.monster import Monster
+from systems.stats import Stat
 from .scene import Scene
 from systems.party import Party, PartyRow
 
@@ -28,7 +29,7 @@ class Combat(Scene):
         creaturesInCombat = [c for c in player.members if c is not None] + \
             [c for c in enemy.members if c is not None]
         creaturesInCombat = list(
-            map(lambda c: (c,  int(c.SPD)), creaturesInCombat))
+            map(lambda c: (c,  int(c.stats[Stat.SPD])), creaturesInCombat))
         creaturesInCombat.sort(key=lambda p: p[1], reverse=True)
         self.turnOrder = deque(list(map(lambda p: p[0], creaturesInCombat)))
         return self

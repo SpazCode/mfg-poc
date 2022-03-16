@@ -3,7 +3,7 @@ from __future__ import annotations
 from random import randint
 from entites.ability import Ability, AbilitySet, TargetType
 from entites.creature import Creature, CreatureSize
-from systems import stats
+from systems.stats import Stats
 from systems.party import Party
 
 
@@ -12,7 +12,7 @@ class Monster(Creature):
     def __init__(self) -> None:
         super().__init__()
         self.name = ''
-        self.stats = stats()
+        self.stats = Stats()
         self.size = CreatureSize.MEDIUM
         self.abilities = AbilitySet()
 
