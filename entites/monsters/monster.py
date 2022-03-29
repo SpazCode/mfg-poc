@@ -3,7 +3,7 @@ from __future__ import annotations
 from random import randint
 from entites.ability import Ability, AbilitySet, TargetType
 from entites.creature import Creature, CreatureSize
-from systems.stats import Stats
+from systems.stats import Stat, Stats
 from systems.party import Party
 
 
@@ -23,17 +23,32 @@ class Monster(Creature):
         self.name = value
         return self
 
-    def updateStats(self) -> Creature:
-        self.ATK = max(1,  6 + (int(self.getSTR() / 2) - 5) +
-                       (int(self.getDEX() / 4) - 3))
-        self.DEF = max(1,  6 + (int(self.getCON() / 2) - 5) +
-                       (int(self.getDEX() / 4) - 3))
-        self.MAG = max(1,  6 + (int(self.getINT() / 2) - 5) +
-                       (int(self.getWIS() / 4) - 3))
-        self.RES = max(1,  6 + (int(self.getWIS() / 2) - 5) +
-                       (int(self.getCHA() / 4) - 3))
-        self.SPD = max(1, 8 + (int(self.getDEX() / 2) - 3)
-                       + (int(self.getCHA() / 4) - 3))
+    def setATK(self, value: int) -> Monster:
+        self.stats[Stat.ATK] = value
+        return self
+
+    def setDEF(self, value: int) -> Monster:
+        self.stats[Stat.DEF] = value
+        return self
+
+    def setMAG(self, value: int) -> Monster:
+        self.stats[Stat.MAG] = value
+        return self
+
+    def setRES(self, value: int) -> Monster:
+        self.stats[Stat.RES] = value
+        return self
+
+    def setACC(self, value: int) -> Monster:
+        self.stats[Stat.ACC] = value
+        return self
+
+    def setEVD(self, value: int) -> Monster:
+        self.stats[Stat.EVD] = value
+        return self
+
+    def setSPD(self, value: int) -> Monster:
+        self.stats[Stat.SPD] = value
         return self
 
     def getStatBlock(self) -> str:
@@ -53,11 +68,15 @@ class Monster(Creature):
             choice = randint(0, len(abilityChoices) - 1)
             ability = abilityChoices[choice]
 
-            #
+            # If there are no more abilities to try we do noting
             if ability is None or ability in tried:
+                print("%s does nothing".format(self.name))
                 return
 
             tried.append(ability)
+
+            if not ability.canUse():
+                continue
 
             if ability.targetType is TargetType.ENEMY:
                 targetsInRange = list(filter(lambda m: Ability.isTargetInRange(

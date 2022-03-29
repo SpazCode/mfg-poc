@@ -16,8 +16,11 @@ class Ability(object):
         self.targetType = TargetType.SELF
         self.range = Range.SELF
 
-    def setUser(self, user: Creature):
+    def setUser(self, user: Creature) -> None:
         self.user = user
+
+    def canUse(self) -> bool:
+        return True
 
     @overload
     def execute(self, target: Any) -> None:

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from random import randint
-from entites.ability import AbilitySet, CombatAbility, Range
+from entites.ability import AbilitySet
 from entites.creature import Creature, CreatureSize
-from entites.items.equipment import EquipentSlots, EquipmentSet
-from entites.items.weapon import BareHanded, Weapon
+from entites.items import BareHanded, UnArmoured
+from entites.items.equipment import EquipentSlot, Equipment, EquipmentSet
+from entites.items.weapon import Weapon
 from systems.stats import Stat, Stats
 
 
@@ -15,10 +15,9 @@ class Character(Creature):
         self.name = ""
         self.stats = Stats()
         self.size = CreatureSize.MEDIUM
-        self.abilities = AbilitySet().setAttack(Character.BasicAttack(self))
-        barehands = BareHanded()
-        barehands.equip(self)
-        self.equipment = EquipmentSet().equip(EquipentSlots.MAIN_HAND, barehands)
+        self.abilities = AbilitySet()
+        self.equipment = EquipmentSet().equip(EquipentSlot.MAIN_HAND,
+                                              BareHanded()).equip(EquipentSlot.BODY, UnArmoured())
 
     def getName(self) -> str:
         return self.name
@@ -29,6 +28,19 @@ class Character(Creature):
 
     def getAbilitySet(self) -> AbilitySet:
         return self.abilities
+
+    def equip(self, slot: EquipentSlot, weapon: Equipment) -> Character:
+        if slot in [EquipentSlot.ACCESSORY_1, EquipentSlot.ACCESSORY_2]:
+            pass
+        elif slot in [EquipentSlot.MAIN_HAND]:
+            if not isinstance(weapon, Weapon):
+                pass
+            self.equipment[EquipentSlot.MAIN_HAND] = weapon
+        elif slot in [EquipentSlot.OFF_HAND]:
+            pass
+        else:
+            pass
+        return self
 
     def updateStats(self) -> Character:
         # Set Base stats for a character.
@@ -41,16 +53,17 @@ class Character(Creature):
                 for stat in mods.keys():
                     self.stats[stat] += mods[stat]
         # Set attacks based on weapon(s)
-        if type(self.equipment[EquipentSlots.MAIN_HAND]) is Weapon and type(self.equipment[EquipentSlots.RIGHT_HAND]) is Weapon:
+        if type(self.equipment[EquipentSlot.MAIN_HAND]) is Weapon and type(self.equipment[EquipentSlot.RIGHT_HAND]) is Weapon:
             # TODO(Stuart): Make the double attack ability to replace this.
             self.abilities.setAttack(
-                self.equipment[EquipentSlots.MAIN_HAND].getAttack())
+                self.equipment[EquipentSlot.MAIN_HAND].getAttack())
         else:
             self.abilities.setAttack(
-                self.equipment[EquipentSlots.MAIN_HAND].getAttack())
+                self.equipment[EquipentSlot.MAIN_HAND].getAttack())
         # Get the skills from the equiment
         for slot in self.equipment.keys():
             if self.equipment[slot] is not None:
+                self.equipment[slot].equip(self)
                 for skill in self.equipment[slot].skills:
                     if skill.canUse(self.getAttributes()):
                         self.abilities.addSkill(skill.skillType, skill.skill)
@@ -61,26 +74,3 @@ class Character(Creature):
 
     def __str__(self) -> str:
         return self.name
-
-    class BasicAttack(CombatAbility):
-
-        def __init__(self, user: Character) -> None:
-            super().__init__(user)
-            self.name = 'Attack'
-            self.description = 'Basic attack with your main weapon'
-            self.range = Range.CLOSE
-
-        def execute(self, target: Creature) -> None:
-            if target is not None:
-                dmg = max(1, target.DEF - self.user.ATK)
-                hit = int(randint(0, 10)) + (int(self.user.DEX / 2) - 5)
-                if hit > 1:
-                    print('{0} hit {1} dealing {2} Damage'.format(
-                        self.user.getName(), target.getName(), dmg))
-                    target.setCurrentHP(max(0, target.getCurrentHP() - dmg))
-                    return
-                else:
-                    print('{0} missed {1}'.format(
-                        self.user.getName(), target.getName()))
-                    return
-            print("No Target Specifed")

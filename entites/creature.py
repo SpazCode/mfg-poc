@@ -11,6 +11,8 @@ class Creature(object):
     def __init__(self) -> None:
         self.currentHP = 0
         self.HP = 5
+        self.currentMP = 0
+        self.MP = 5
         self._attributes = Attributes()
 
     def resetHP(self) -> Creature:
@@ -29,6 +31,24 @@ class Creature(object):
 
     def setHP(self, value: int) -> Creature:
         self.HP = value
+        return self
+
+    def resetMP(self) -> Creature:
+        self.currentMP = self.MP
+        return self
+
+    def getCurrentMP(self) -> int:
+        return self.currentMP
+
+    def setCurrentMP(self, value: int) -> Creature:
+        self.currentMP = value
+        return self
+
+    def getMP(self) -> int:
+        return self.MP
+
+    def setMP(self, value: int) -> Creature:
+        self.MP = value
         return self
 
     def getSTR(self) -> int:
