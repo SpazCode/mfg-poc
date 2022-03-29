@@ -14,8 +14,8 @@ from systems.party import Party, PartyRow
 
 class Combat(Scene):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, surface) -> None:
+        super().__init__(surface)
         self.playerParty = Party()
         self.enemyParty = Party()
         self.turnOrder = list()
@@ -34,7 +34,7 @@ class Combat(Scene):
         self.turnOrder = deque(list(map(lambda p: p[0], creaturesInCombat)))
         return self
 
-    def run(self) -> None:
+    def update(self) -> None:
         print('===============================')
         print(str(self.playerParty))
         print(' < VS > ')
