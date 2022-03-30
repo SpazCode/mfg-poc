@@ -25,6 +25,7 @@ class MyFamilyGuild(object):
         pygame.init()
         self._display_surface = pygame.display.set_mode(
             self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        pygame.display.set_caption("My Family Guild - POC")
         self._running = True
         self._scenes['testing'] = TestingScene(self._display_surface)
         self.current_scene = 'testing'
