@@ -23,11 +23,12 @@ class MyFamilyGuild(object):
 
     def on_init(self) -> None:
         pygame.init()
+        pygame.font.init()
         self._display_surface = pygame.display.set_mode(
             self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("My Family Guild - POC")
         self._running = True
-        self._scenes['testing'] = TestingScene(self._display_surface)
+        self._scenes['testing'] = TestingScene(self._display_surface).setup()
         self.current_scene = 'testing'
 
     # Process the input events from pygame
@@ -46,18 +47,22 @@ class MyFamilyGuild(object):
 
     # Final cleanup tasks for the game on exit
     def on_cleanup(self) -> None:
+        pygame.font.quit()
         pygame.quit()
 
     # Main game loop
     def on_execute(self) -> None:
         if self.on_init() == False:
             self._running = False
+        
+        clock = pygame.time.Clock()
 
         while(self._running):
             for event in pygame.event.get():
                 self.on_event(event)
             self.on_loop()
             self.on_render()
+            clock.tick(30)
         self.on_cleanup()
 
 

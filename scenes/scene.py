@@ -8,7 +8,7 @@ class Scene(object):
 
     # initialize the scene and it's variables
     def setup(self) -> Scene:
-        pass
+        return self
 
     # Update the scene logic before rendering
     def update(self) -> None:
