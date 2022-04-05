@@ -7,7 +7,7 @@ from entites.items import ShortBow, Spear, Staff, Sword
 from entites.items.equipment import EquipentSlot
 from entites.monsters.goblin import Goblin
 from scenes.combat import Combat
-from scenes.testing import TestingScene
+from scenes.mainmenu import MainMenuScene
 from systems.inputs import InputManager, InputCommand
 from systems.party import Party, PartyRow
 
@@ -18,8 +18,10 @@ class MyFamilyGuild(object):
         self._running = True
         self._display_surface = None
         self.size = self.weight, self.height = 640, 400
+        # TODO(SpazCode): Replace these members with a scene manager class
         self._scenes = dict()
         self.current_scene = ''
+        # TODO(SpazCode): Remplace this
         self._game_state = dict()
         # Initialize the input manager with the default control settings.
         self.input_manager = InputManager().initialize({InputCommand.ACCEPT: pygame.K_a,
@@ -37,9 +39,9 @@ class MyFamilyGuild(object):
             self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("My Family Guild - POC")
         self._running = True
-        self._scenes['testing'] = TestingScene(
+        self._scenes['main_menu'] = MainMenuScene(
             self._display_surface, self.input_manager).setup()
-        self.current_scene = 'testing'
+        self.current_scene = 'main_menu'
 
     # Process the input events from pygame
     def on_event(self, event) -> None:
