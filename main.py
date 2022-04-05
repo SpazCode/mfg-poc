@@ -8,6 +8,7 @@ from entites.items.equipment import EquipentSlot
 from entites.monsters.goblin import Goblin
 from scenes.combat import Combat
 from scenes.testing import TestingScene
+from systems.inputs import InputManager, InputCommand
 from systems.party import Party, PartyRow
 
 
@@ -20,6 +21,14 @@ class MyFamilyGuild(object):
         self._scenes = dict()
         self.current_scene = ''
         self._game_state = dict()
+        # Initialize the input manager with the default control settings.
+        self.input_manager = InputManager().initialize({InputCommand.ACCEPT: pygame.K_a,
+                                                        InputCommand.CANCEL: pygame.K_s,
+                                                        InputCommand.MENU: pygame.K_q,
+                                                        InputCommand.UP: pygame.K_UP,
+                                                        InputCommand.DOWN: pygame.K_DOWN,
+                                                        InputCommand.LEFT: pygame.K_LEFT,
+                                                        InputCommand.RIGHT: pygame.K_RIGHT})
 
     def on_init(self) -> None:
         pygame.init()
@@ -28,17 +37,19 @@ class MyFamilyGuild(object):
             self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("My Family Guild - POC")
         self._running = True
-        self._scenes['testing'] = TestingScene(self._display_surface).setup()
+        self._scenes['testing'] = TestingScene(
+            self._display_surface, self.input_manager).setup()
         self.current_scene = 'testing'
 
     # Process the input events from pygame
     def on_event(self, event) -> None:
+        self.input_manager.update_status(event)
         if event.type == pygame.QUIT:
             self._running = False
 
     # Update the game state based on the events.
     def on_loop(self) -> None:
-        pass
+        self._scenes[self.current_scene].update()
 
     # Handle rendering the game
     def on_render(self) -> None:
@@ -54,10 +65,11 @@ class MyFamilyGuild(object):
     def on_execute(self) -> None:
         if self.on_init() == False:
             self._running = False
-        
+
         clock = pygame.time.Clock()
 
         while(self._running):
+            self.input_manager.reset_status()
             for event in pygame.event.get():
                 self.on_event(event)
             self.on_loop()
