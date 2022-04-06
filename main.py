@@ -8,6 +8,8 @@ from entites.items.equipment import EquipentSlot
 from entites.monsters.goblin import Goblin
 from scenes.combat import Combat
 from scenes.mainmenu import MainMenuScene
+from scenes.scene import SceneManager
+from scenes.testing import TesterScene
 from systems.inputs import InputManager, InputCommand
 from systems.party import Party, PartyRow
 
@@ -18,9 +20,7 @@ class MyFamilyGuild(object):
         self._running = True
         self._display_surface = None
         self.size = self.weight, self.height = 640, 400
-        # TODO(SpazCode): Replace these members with a scene manager class
-        self._scenes = dict()
-        self.current_scene = ''
+        self._scenes_manager = None
         # TODO(SpazCode): Remplace this
         self._game_state = dict()
         # Initialize the input manager with the default control settings.
@@ -33,15 +33,23 @@ class MyFamilyGuild(object):
                                                         InputCommand.RIGHT: pygame.K_RIGHT})
 
     def on_init(self) -> None:
+        # initialize pygame
         pygame.init()
         pygame.font.init()
         self._display_surface = pygame.display.set_mode(
             self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("My Family Guild - POC")
+        # Initalize the Scene manager in the game
+        self._scenes_manager = SceneManager(
+            self._display_surface, self.input_manager, self.end_game)
+        self._scenes_manager.add_scene('main_menu', MainMenuScene)
+        self._scenes_manager.add_scene('tester', TesterScene)
+        self._scenes_manager.set_scene('main_menu')
+        # Set the game to be running
         self._running = True
-        self._scenes['main_menu'] = MainMenuScene(
-            self._display_surface, self.input_manager).setup()
-        self.current_scene = 'main_menu'
+
+    def end_game(self) -> None:
+        self._running = False
 
     # Process the input events from pygame
     def on_event(self, event) -> None:
@@ -51,11 +59,11 @@ class MyFamilyGuild(object):
 
     # Update the game state based on the events.
     def on_loop(self) -> None:
-        self._scenes[self.current_scene].update()
+        self._scenes_manager.get_scene().update()
 
     # Handle rendering the game
     def on_render(self) -> None:
-        self._scenes[self.current_scene].render()
+        self._scenes_manager.get_scene().render()
         pygame.display.flip()
 
     # Final cleanup tasks for the game on exit

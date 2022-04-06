@@ -4,27 +4,65 @@ from systems.inputs import InputManager
 
 
 class Scene(object):
-    def __init__(self, surface, input_manager: InputManager) -> None:
-        self.ongoing = False
-        self._display_surface = surface
-        self._input_manager = input_manager
+    """ Object to represent the scene being shown on the screen """
 
-    # initialize the scene and it's variables
+    def __init__(self, screen, input_manager: InputManager, scene_manager: SceneManager) -> None:
+        self.ongoing = False
+        self._screen = screen
+        self._input_manager = input_manager
+        self._scene_manager = scene_manager
+
     def setup(self) -> Scene:
+        """ Initialize the scene and it's variables """
         return self
 
-    # Update the scene logic before rendering
     def update(self) -> None:
+        """ Update the scene logic before rendering """
         pass
 
-    # Render the scene based on the curernt game state
     def render(self) -> None:
+        """ Render the scene based on the curernt game state """
         pass
 
-    # Allows you to check if the scene is still running
     def running(self) -> bool:
+        """ Allows you to check if the scene is still running """
         return self.ongoing
 
-    # End and clean up the scene
     def end(self) -> None:
+        """ End and clean up the scene """
         pass
+
+
+class SceneManager(object):
+    """ Utility Class used to manage the {Scenes} through out the game. """
+
+    def __init__(self, screen, input_manager: InputManager, end_game_callback: function) -> None:
+        self._scenes = dict()
+        self._current_scene_name = ''
+        self._current_scene = None
+        self._screen = screen
+        self._input_manager = input_manager
+        self._end_game_callback = end_game_callback
+
+    def add_scene(self, name: str, scene) -> SceneManager:
+        self._scenes[name] = scene
+        return self
+
+    def get_scenes(self) -> list:
+        return self._scenes.keys()
+
+    def set_scene(self, name: str) -> None:
+        if name not in self._scenes.keys():
+            raise Exception('This scene is not in the scene loader.')
+        if self._current_scene is not None:
+            self._current_scene.end()
+            del self._current_scene
+        self._current_scene_name = name
+        self._current_scene = self._scenes[name](
+            self._screen, self._input_manager, self).setup()
+
+    def get_scene(self) -> Scene:
+        return self._current_scene
+
+    def end_game(self) -> None:
+        self._end_game_callback()
