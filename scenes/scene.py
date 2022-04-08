@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+from pygame import Surface
 from systems.inputs import InputManager
+from ui.components.containers import Container
 
 
 class Scene(object):
     """ Object to represent the scene being shown on the screen """
 
-    def __init__(self, screen, input_manager: InputManager, scene_manager: SceneManager) -> None:
+    def __init__(self, screen: Surface, input_manager: InputManager, scene_manager: SceneManager) -> None:
         self.ongoing = False
         self._screen = screen
         self._input_manager = input_manager
         self._scene_manager = scene_manager
+        self._component_root = Container()
+        self._component_root.set_width(
+            screen.get_width()).set_height(screen.get_height())
 
     def setup(self) -> Scene:
         """ Initialize the scene and it's variables """
@@ -18,11 +23,11 @@ class Scene(object):
 
     def update(self) -> None:
         """ Update the scene logic before rendering """
-        pass
+        self._component_root.on_update()
 
     def render(self) -> None:
         """ Render the scene based on the curernt game state """
-        pass
+        self._screen.blit(self._component_root.on_render(), (0, 0))
 
     def running(self) -> bool:
         """ Allows you to check if the scene is still running """
@@ -36,7 +41,7 @@ class Scene(object):
 class SceneManager(object):
     """ Utility Class used to manage the {Scenes} through out the game. """
 
-    def __init__(self, screen, input_manager: InputManager, end_game_callback: function) -> None:
+    def __init__(self, screen: Surface, input_manager: InputManager, end_game_callback: function) -> None:
         self._scenes = dict()
         self._current_scene_name = ''
         self._current_scene = None

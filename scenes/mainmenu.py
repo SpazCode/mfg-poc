@@ -38,6 +38,7 @@ class MainMenuScene(Scene):
         else:
             self.input_pause = min(
                 MainMenuScene.__MAX_INPUT_DELAY, self.input_pause + 1)
+        return super().update()
 
     def render(self) -> None:
         background = Rect(0, 0, 640, 400)
