@@ -57,7 +57,7 @@ class MainMenuScene(Scene):
             background = None if self.menu_index is not i else Color(
                 255, 255, 255, 50)
             opt_surface = self.text_font.render(
-                opt, False, Color(0, 0, 0), background)
+                opt, False, Color(0, 0, 0, 125), background)
             cx = x_center(self._screen.get_width(),
                           opt_surface.get_width())
             self._screen.blit(opt_surface, (cx, opt_y))

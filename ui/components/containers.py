@@ -25,6 +25,7 @@ class Container(Component):
             self._components[id].on_update()
 
     def add_component(self, id: str, component: Component) -> Container:
+        component.initialize()
         self._order.append(id)
         self._components[id] = component
 
