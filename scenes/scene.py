@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pygame import Surface
 from systems.inputs import InputManager
+from ui.components.components import Component
 from ui.components.containers import Container
 
 
@@ -16,6 +17,10 @@ class Scene(object):
         self._component_root = Container()
         self._component_root.set_width(
             screen.get_width()).set_height(screen.get_height())
+
+    def add_component(self, id: str, component: Component) -> Scene:
+        self._component_root.add_component(id, component)
+        return self
 
     def setup(self) -> Scene:
         """ Initialize the scene and it's variables """

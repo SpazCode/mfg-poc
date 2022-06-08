@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pygame
 from pygame import Surface
 from ui.components.components import Component
 
@@ -13,7 +14,8 @@ class Container(Component):
         super().__init__()
 
     def on_render(self) -> Surface:
-        surface = Surface((self._w, self._h))
+        surface = Surface((self._w, self._h), pygame.SRCALPHA)
+        surface.convert_alpha()
         for id in self._order:
             com_surface = self._components[id].on_render()
             surface.blit(

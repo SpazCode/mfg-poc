@@ -84,8 +84,8 @@ class TextButton(Button):
     def on_render(self) -> Surface:
         surface = super(Button, self).on_render()
         if self._text is not None and self._font is not None:
-            surfacec = self.text_font.render(
-                self._text, False, self._text_color, surfacec)
+            surface = self._font.render(
+                self._text, False, self._text_color, surface)
         return surface
 
 

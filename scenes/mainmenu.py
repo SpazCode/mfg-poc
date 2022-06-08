@@ -6,8 +6,10 @@ from pygame.font import Font
 from config import getAssetPath
 from scenes.scene import Scene
 from systems.inputs import InputCommand
-from ui.components.backgrounds import verticalGradientRect
-from ui.utilities import x_center
+from ui.components.backgrounds import GradientBackground, verticalGradientRect
+from ui.components.buttons import ButtonList, TextButton
+from ui.components.images import Image
+from ui.utilities import x_center, y_center
 
 
 class MainMenuScene(Scene):
@@ -21,6 +23,29 @@ class MainMenuScene(Scene):
             raise FontError("Fonts were not initialized")
         self.text_font = Font(getAssetPath(
             "fonts/PixelAzureBonds-327Z.ttf"), 20)
+        # Set up the rendered components
+        bg = GradientBackground()
+        bg.set_colors(Color(168, 58, 34), Color(168, 125, 34)).set_height(
+            self._component_root.get_height()).set_width(self._component_root.get_width())
+        self.add_component('bg', bg)
+        # Logo
+        logo = Image()
+        logo.set_file("logo.PNG").set_scale((0.62, 0.62))
+        self.add_component('logo', logo)
+        logo.set_x(x_center(self._screen.get_width(), logo.get_width()))
+        # Option List
+        button_list = ButtonList()
+        button_list.set_height(50 * len(self.menu_options)).set_width(120)
+        # Creating all the buttons
+        for i, opt in enumerate(self.menu_options):
+            txtbtn = TextButton()
+            txtbtn.set_text(opt).set_font(self.text_font).set_text_color(Color(0, 0, 0, 125)).set_background_color(
+                None).set_focus_color(Color(255, 255, 255, 50)).set_height(40).set_width(120).set_x(0).set_y(5 + i * 40)
+            button_list.add_button(opt, txtbtn)
+        self.add_component('options_menu', button_list)
+        button_list.set_x(x_center(self._screen.get_width(), button_list.get_width())).set_y(
+            logo.get_height() + 25)
+        # Return updated scene
         return super().setup()
 
     def update(self) -> None:
@@ -41,27 +66,7 @@ class MainMenuScene(Scene):
         return super().update()
 
     def render(self) -> None:
-        background = Rect(0, 0, 640, 400)
-        verticalGradientRect(self._screen, Color(
-            168, 58, 34), Color(168, 125, 34), background)
-        logo_img = pygame.image.load(getAssetPath("logo.PNG"))
-        # Set up the logo
-        logo_size = (int(logo_img.get_width() * 0.62),
-                     int(logo_img.get_height() * 0.62))
-        logo_img = pygame.transform.scale(logo_img, logo_size)
-        center_x = x_center(self._screen.get_width(), logo_size[0])
-        self._screen.blit(logo_img, (center_x, 0))
-        # Create the menu options
-        opt_y = logo_img.get_height() + 25
-        for i, opt in enumerate(self.menu_options):
-            background = None if self.menu_index is not i else Color(
-                255, 255, 255, 50)
-            opt_surface = self.text_font.render(
-                opt, False, Color(0, 0, 0, 125), background)
-            cx = x_center(self._screen.get_width(),
-                          opt_surface.get_width())
-            self._screen.blit(opt_surface, (cx, opt_y))
-            opt_y += 10 + opt_surface.get_height()
+        super().render()
 
 
 class FontError(Exception):

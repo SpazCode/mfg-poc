@@ -17,14 +17,14 @@ class TesterScene(Scene):
         bg = GradientBackground()
         bg.set_colors(Color(58, 168, 34), Color(125, 168, 34)).set_height(
             self._component_root.get_height()).set_width(self._component_root.get_width())
-        self._component_root.add_component('bg', bg)
+        self.add_component('bg', bg)
         button = Button()
         button.set_background_color(
             Color(255, 125, 125)).set_width(100).set_height(30)
         button.set_x(x_center(self._component_root.get_width(), button.get_width())).set_y(
             y_center(self._component_root.get_height(), button.get_height()))
-        self._component_root.add_component('button', button)
-        return super().setup()
+        self.add_component('button', button)
+        return super(Scene, self).setup()
 
     def update(self) -> None:
         if self.input_pause >= TesterScene.__MAX_INPUT_DELAY:
@@ -33,4 +33,4 @@ class TesterScene(Scene):
         else:
             self.input_pause = min(
                 TesterScene.__MAX_INPUT_DELAY, self.input_pause + 1)
-        return super().update()
+        return super(Scene, self).update()
